@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LiteBoard — DMX512 Theatrical Lighting Console</title>
+<meta name="description" content="The Lumineers — an inexpensive, repairable, self-contained DMX512 lighting console. CSE Senior Design, UT Arlington." />
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-2: #0f1219;
+    --panel: #12151c;
+    --panel-2: #171b24;
+    --ink: #e8ecf3;
+    --muted: #9aa3b2;
+    --accent: #ff8a00;      /* LiteBoard orange */
+    --accent-2: #2b4fd9;    /* LiteBoard blue */
+    --accent-3: #6ea8fe;
+    --border: #1f2430;
+    --ok: #4ade80;
+    --warn: #facc15;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif; line-height: 1.6; }
+  a { color: var(--accent-3); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(10px);
+    background: rgba(11,13,18,0.75);
+    border-bottom: 1px solid var(--border);
+  }
+  nav .inner {
+    max-width: 1040px; margin: 0 auto; padding: 12px 24px;
+    display: flex; gap: 18px; flex-wrap: wrap; align-items: center;
+  }
+  nav .brand { font-weight: 700; letter-spacing: 0.04em; margin-right: auto; }
+  nav .brand span { color: var(--accent); }
+  nav a.link { color: var(--muted); font-size: 0.9rem; }
+  nav a.link:hover { color: var(--ink); text-decoration: none; }
+
+  header.hero {
+    padding: 88px 24px 56px;
+    text-align: center;
+    background:
+      radial-gradient(900px 300px at 20% -50px, rgba(255,138,0,0.18), transparent 60%),
+      radial-gradient(900px 300px at 80% -50px, rgba(43,79,217,0.22), transparent 60%);
+    border-bottom: 1px solid var(--border);
+  }
+  header.hero .eyebrow {
+    color: var(--accent); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; font-size: 0.78rem;
+  }
+  header.hero h1 {
+    margin: 10px 0 0;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    letter-spacing: 0.01em;
+    font-weight: 800;
+  }
+  header.hero h1 .lite { color: var(--accent); }
+  header.hero h1 .board { color: var(--accent-3); }
+  header.hero p.lede {
+    max-width: 720px; margin: 16px auto 0; color: var(--muted); font-size: 1.08rem;
+  }
+  header.hero .meta {
+    margin-top: 18px; color: var(--muted); font-size: 0.9rem;
+  }
+  header.hero .cta {
+    display: inline-flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; justify-content: center;
+  }
+  header.hero .cta a {
+    padding: 10px 18px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--panel); color: var(--ink);
+  }
+  header.hero .cta a.primary { background: var(--accent); color: #1a0f00; border-color: var(--accent); font-weight: 600; }
+  header.hero .cta a:hover { text-decoration: none; border-color: var(--accent); }
+
+  main { max-width: 1040px; margin: 0 auto; padding: 8px 24px 96px; }
+  section { margin-top: 64px; scroll-margin-top: 80px; }
+  section h2 {
+    font-size: 1.55rem; margin: 0 0 6px;
+    border-left: 3px solid var(--accent);
+    padding-left: 12px;
+  }
+  section .sub { color: var(--muted); margin: 0 0 20px; padding-left: 15px; font-size: 0.95rem; }
+
+  .grid { display: grid; gap: 16px; }
+  .grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .grid.cols-3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .grid.cols-4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .card h3 { margin: 0 0 6px; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+  .card p { margin: 0; color: var(--muted); font-size: 0.93rem; }
+  .card .tag {
+    display: inline-block; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted);
+  }
+  .card .tag.critical { color: #ffb4a8; border-color: #5a2a22; }
+  .card .tag.high { color: var(--accent); border-color: #5a3a11; }
+  .card .tag.medium { color: var(--warn); border-color: #5a4a11; }
+  .card .tag.low { color: var(--muted); }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+  .stat {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--border); border-radius: 12px; padding: 18px;
+  }
+  .stat .n { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+  .stat .l { color: var(--muted); font-size: 0.88rem; margin-top: 4px; }
+
+  table.budget {
+    width: 100%; border-collapse: collapse; background: var(--panel);
+    border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+    font-size: 0.95rem;
+  }
+  table.budget th, table.budget td {
+    padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border);
+  }
+  table.budget th { background: var(--panel-2); color: var(--muted); font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  table.budget td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.budget tr.total td { font-weight: 700; color: var(--accent); border-top: 2px solid var(--accent); border-bottom: none; }
+
+  .timeline { position: relative; padding-left: 22px; }
+  .timeline::before {
+    content: ""; position: absolute; left: 6px; top: 6px; bottom: 6px;
+    width: 2px; background: var(--border);
+  }
+  .tl-item { position: relative; padding: 4px 0 14px 4px; }
+  .tl-item::before {
+    content: ""; position: absolute; left: -19px; top: 11px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 3px rgba(255,138,0,0.18);
+  }
+  .tl-item .date { color: var(--accent); font-weight: 600; font-size: 0.85rem; }
+  .tl-item .what { color: var(--ink); }
+
+  ul.team { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  ul.team li { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  ul.team li .name { font-weight: 600; }
+  ul.team li .role { color: var(--accent); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+  ul.team li .domains { color: var(--muted); font-size: 0.88rem; margin-top: 6px; }
+
+  ul.links { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+  ul.links a {
+    display: inline-block; padding: 8px 14px;
+    border: 1px solid var(--border); border-radius: 999px;
+    background: var(--panel); color: var(--ink);
+  }
+  ul.links a:hover { border-color: var(--accent); text-decoration: none; }
+
+  details.risk {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 16px; margin-bottom: 10px;
+  }
+  details.risk summary { cursor: pointer; font-weight: 600; }
+  details.risk p { color: var(--muted); margin: 8px 0 0; font-size: 0.92rem; }
+
+  footer { text-align: center; color: var(--muted); padding: 28px; border-top: 1px solid var(--border); font-size: 0.88rem; margin-top: 40px; }
+  footer .big { color: var(--ink); font-weight: 700; letter-spacing: 0.04em; }
+  footer .big .lite { color: var(--accent); }
+  footer .big .board { color: var(--accent-3); }
+
+  code { background: var(--panel); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); font-size: 0.9em; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <div class="brand"><span>Lite</span>Board</div>
+    <a class="link" href="#about">About</a>
+    <a class="link" href="#system">System</a>
+    <a class="link" href="#requirements">Requirements</a>
+    <a class="link" href="#timeline">Timeline</a>
+    <a class="link" href="#budget">Budget</a>
+    <a class="link" href="#team">Team</a>
+    <a class="link" href="#links">Repo</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="eyebrow">The Lumineers &middot; CSE 4316 Senior Design &middot; Fall 2025 – Spring 2026</div>
+  <h1><span class="lite">Lite</span><span class="board">Board</span></h1>
+  <p class="lede">An inexpensive, repairable, self-contained DMX512 lighting console — feature-complete for small-to-medium theatre companies, without the four- and five-figure price tags of industry-grade boards.</p>
+  <div class="meta">Department of Computer Science &amp; Engineering &middot; The University of Texas at Arlington</div>
+  <div class="cta">
+    <a class="primary" href="#system">Explore the system</a>
+    <a href="https://github.com/sanketkoirala/sd-liteboard">GitHub repo</a>
+  </div>
+</header>
+
+<main>
+
+  <section id="about">
+    <h2>Problem &amp; Mission</h2>
+    <p class="sub">Why we're building this.</p>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>The problem</h3>
+        <p>Digital lighting consoles are essential for modern theatre, yet commercial boards from manufacturers like ETC routinely cost thousands to tens of thousands of dollars. Smaller theatres end up renting venues just to access a lightboard — and each vendor uses a proprietary, hard-to-learn showfile format.</p>
+      </div>
+      <div class="card">
+        <h3>Our approach</h3>
+        <p>Design, build, and test a DMX512-compatible console that is cheap, user-friendly, and feature-complete for small-to-medium productions. Ship it three ways: fully assembled, as a parts kit, or as open schematics plus software — all usable with free and open-source tooling.</p>
+      </div>
+      <div class="card">
+        <h3>Who it's for</h3>
+        <p>Educational theatre, collegiate theatre, community theatre, smaller regional theatre, Off-Off-Broadway, and touring companies that want to bring their own familiar console to any DMX512-equipped venue.</p>
+      </div>
+      <div class="card">
+        <h3>Value proposition</h3>
+        <p>A senior-undergraduate thesis that demonstrates our technical and communication skills to the department, employers, and ourselves — and gives UTA CSE a showcase project that could also serve the Theatre Arts &amp; Dance Department as a backup board or training aid.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="stats">
+    <div class="stats">
+      <div class="stat"><div class="n">512</div><div class="l">DMX channels driven per universe</div></div>
+      <div class="stat"><div class="n">&lt; $1000</div><div class="l">Target price — fully assembled unit</div></div>
+      <div class="stat"><div class="n">&lt; 15 lb</div><div class="l">Total device weight target</div></div>
+      <div class="stat"><div class="n">$800</div><div class="l">CSE department budget allocation</div></div>
+    </div>
+  </section>
+
+  <section id="system">
+    <h2>System Overview</h2>
+    <p class="sub">The console is a desktop-style machine with physical controls on the top face and I/O on the back. Inside, a single-board computer coordinates a DMX controller, a controls board, and an expansion header.</p>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Single-Board Computer</h3>
+        <p>Runs the showfile editor/executor, hosts the GUI for an external monitor, and talks to the controls board, DMX controller, and expansion header over GPIO.</p>
+      </div>
+      <div class="card">
+        <h3>DMX512 Controller</h3>
+        <p>Dedicated hardware that takes instructions from the SBC and emits standards-compliant DMX512 signals at correct format and signal strength. Has its own driver, developed separately.</p>
+      </div>
+      <div class="card">
+        <h3>Controls Board</h3>
+        <p>Houses all analog/digital sliders, rotary knobs, keypad buttons, and a backup LCD. Designed to lift out as one piece for easy repair after the caps are removed.</p>
+      </div>
+      <div class="card">
+        <h3>Expansion Header Board</h3>
+        <p>Attach additional hardware — extra slider banks, a joystick for moving-light control, or future modules — without redesigning the core console.</p>
+      </div>
+      <div class="card">
+        <h3>Showfile Editor (GUI)</h3>
+        <p>Create/save showfiles, edit cues, map device parameters to sliders and knobs, reorder cues, and launch playback. Also runs on regular PCs so technicians can prep shows away from the console.</p>
+      </div>
+      <div class="card">
+        <h3>Showfile Executor</h3>
+        <p>Runs compiled showfiles on the console. Cue transitions are per-device — one light can slow-fade while another snaps instantly — with manual overrides from the physical controls.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="interface">
+    <h2>Built-in Physical Controls</h2>
+    <p class="sub">What lives on the top face of the unit.</p>
+    <div class="grid cols-3">
+      <div class="card"><h3>9+ vertical sliders</h3><p>Manual control of device parameters, one dedicated as a grandmaster (globally scales intensity by default).</p></div>
+      <div class="card"><h3>4+ rotary knobs</h3><p>Mapped per-cue to device parameters for precise live adjustment.</p></div>
+      <div class="card"><h3>40+ keypad switches</h3><p>Expedited access to the most common editing and playback functions without keyboard/mouse.</p></div>
+      <div class="card"><h3>LCD display</h3><p>Current cue, next cue, slider/knob mappings, and error codes — usable without an external monitor.</p></div>
+      <div class="card"><h3>GO! button</h3><p>Single-press cue advance — the defining interaction of a modern lightboard.</p></div>
+      <div class="card"><h3>Guarded power &amp; reset</h3><p>Recessed/guarded switches for emergency restart without accidental triggers mid-show.</p></div>
+    </div>
+  </section>
+
+  <section id="requirements">
+    <h2>Customer Requirements</h2>
+    <p class="sub">The five pillars driving every design decision.</p>
+    <div class="grid cols-2">
+      <div class="card">
+        <span class="tag high">Priority: High</span>
+        <h3>Affordability</h3>
+        <p>Targets: &lt; $1000 assembled, &lt; $500 as a kit, &lt; $100 as schematics + software. Parts must be commonly stocked to avoid bulk-order or vendor-lock pricing.</p>
+      </div>
+      <div class="card">
+        <span class="tag high">Priority: High</span>
+        <h3>Ease of Use</h3>
+        <p>Intuitive interface, clear labeling, responsive feedback. Must accommodate operators of varying technical experience. Reference: ISO 9241-210 (Human-Centered Design for Interactive Systems).</p>
+      </div>
+      <div class="card">
+        <span class="tag critical">Priority: Critical</span>
+        <h3>Interoperability</h3>
+        <p>Full DMX512 compliance via industry-standard XLR-5 connectors. Standards: ANSI E1.11 (USITT DMX512-A), ANSI E1.20 (RDM), USITT pin-out guidelines.</p>
+      </div>
+      <div class="card">
+        <span class="tag high">Priority: High</span>
+        <h3>Portability</h3>
+        <p>Compact, &lt; 15 lb including casing. Must fit standard equipment cases and survive theatrical transit. Reference: ISO 11228-1 (Ergonomics, Manual Handling).</p>
+      </div>
+      <div class="card">
+        <span class="tag low">Priority: Future</span>
+        <h3>Expandability</h3>
+        <p>Modular hardware and software so future fader banks, wireless DMX, or plugin modules can be added without redesign. Reference: ANSI E1.11, IEEE 1471.</p>
+      </div>
+      <div class="card">
+        <span class="tag critical">Priority: Critical</span>
+        <h3>Performance &amp; Safety</h3>
+        <p>Controls must feel instantaneous; cue switches reflect in target devices immediately. Overcurrent protections, ESD tolerance, and IEC 62368-1 as an electrical-safety reference.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="packaging">
+    <h2>Three Ways to Get a LiteBoard</h2>
+    <p class="sub">All three packaging options use free and open-source software — no DRM, no licensing fees.</p>
+    <div class="grid cols-3">
+      <div class="card">
+        <span class="tag critical">Critical priority</span>
+        <h3>Fully Assembled</h3>
+        <p>Ready-to-use LiteBoard with power supply, recovery flash drive, manuals flash drive, and a quick-setup pamphlet. Target price &lt; $1000.</p>
+      </div>
+      <div class="card">
+        <span class="tag medium">Medium priority</span>
+        <h3>Parts Kit</h3>
+        <p>All parts and hardware needed to assemble a LiteBoard, with manuals, recovery image, and printed parts list. Assembly needs only basic hand tools and soldering. Target &lt; $500.</p>
+      </div>
+      <div class="card">
+        <span class="tag low">Low priority</span>
+        <h3>Schematics + Software</h3>
+        <p>For users who can't ship hardware to their region — full schematics, recovery image, manuals, and parts list for self-sourcing. Target &lt; $100.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="timeline">
+    <h2>Development Milestones</h2>
+    <p class="sub">Eight sprints across Senior Design I and II — Fall 2025 through Spring 2026.</p>
+    <div class="timeline">
+      <div class="tl-item"><div class="date">October 2025</div><div class="what">Project Charter</div></div>
+      <div class="tl-item"><div class="date">October 2025</div><div class="what">System Requirements Specification</div></div>
+      <div class="tl-item"><div class="date">November 2025</div><div class="what">Architectural Design Specification</div></div>
+      <div class="tl-item"><div class="date">December 2025</div><div class="what">Console Case Design and Fabrication</div></div>
+      <div class="tl-item"><div class="date">January 2026</div><div class="what">Detailed Design Specification</div></div>
+      <div class="tl-item"><div class="date">January 2026</div><div class="what">DMX Controller &amp; DMX Driver demonstration</div></div>
+      <div class="tl-item"><div class="date">February 2026</div><div class="what">Controls Board &amp; Expansion Header demonstration</div></div>
+      <div class="tl-item"><div class="date">March 2026</div><div class="what">Showfile Editor &amp; Executor demonstration</div></div>
+      <div class="tl-item"><div class="date">April 2026</div><div class="what">CoE Innovation Day poster presentation</div></div>
+      <div class="tl-item"><div class="date">April 2026</div><div class="what">(Pending approval) Demonstration with UTA Theatre Arts &amp; Dance</div></div>
+      <div class="tl-item"><div class="date">April 2026</div><div class="what">Final Project Demonstration</div></div>
+    </div>
+  </section>
+
+  <section id="budget">
+    <h2>Preliminary Budget</h2>
+    <p class="sub">Total development is capped at the CSE department's $800 course allocation. Estimates may rebalance but the total holds.</p>
+    <table class="budget">
+      <thead>
+        <tr><th>Line Item</th><th style="text-align:right">Estimated Cost (USD)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Electronic components &amp; sensors (ICs, passives, cables)</td><td class="num">$220</td></tr>
+        <tr><td>PCBs &amp; fabrication (PCB runs, 3D prints, laser cut, fasteners)</td><td class="num">$180</td></tr>
+        <tr><td>Development hardware (MCU/SoC boards, motor/LED drivers, PSUs)</td><td class="num">$240</td></tr>
+        <tr><td>Software / tools / licenses</td><td class="num">$40</td></tr>
+        <tr><td>Testing &amp; consumables (wire, solder, adhesives, spares)</td><td class="num">$70</td></tr>
+        <tr><td>Contingency (≈5–7%)</td><td class="num">$50</td></tr>
+        <tr class="total"><td>Total</td><td class="num">$800</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="risks">
+    <h2>Top Risks &amp; Mitigations</h2>
+    <p class="sub">From the project charter risk register. Likelihood/impact rated L/M/H, with severe (S) reserved for rare catastrophic impact.</p>
+    <details class="risk"><summary>R1 — Key ordered parts arrive late <em style="color:var(--muted); font-weight:400;">(M / H)</em></summary><p>Mitigation: order materials early. Contingency: source local substitutes.</p></details>
+    <details class="risk"><summary>R3 — Unexpected thermal design issues <em style="color:var(--muted); font-weight:400;">(L / H)</em></summary><p>Mitigation: prefer lower-power devices. Contingency: heatsinks and air cooling.</p></details>
+    <details class="risk"><summary>R4 — Unexpected signal design issues <em style="color:var(--muted); font-weight:400;">(M / M)</em></summary><p>Mitigation: simulate DMX cable and hardware signal strength early. Contingency: oscilloscope and multimeter analysis.</p></details>
+    <details class="risk"><summary>R6 — Lack of time from outside commitments <em style="color:var(--muted); font-weight:400;">(H / M)</em></summary><p>Mitigation: complete tasks well before due dates. Contingency: honest, early communication of emergent commitments.</p></details>
+    <details class="risk"><summary>R9 — Approval to borrow DMX devices from Theatre Arts not granted <em style="color:var(--muted); font-weight:400;">(L / S)</em></summary><p>Mitigation: communicate good stewardship. Contingency: fabricate example test lights and DMX hardware in-house.</p></details>
+    <details class="risk"><summary>R10 — Prototype demonstration with TAAD not granted <em style="color:var(--muted); font-weight:400;">(H / L)</em></summary><p>Mitigation: communicate value of the project. Contingency: internal demonstration or find a willing theatre company elsewhere.</p></details>
+  </section>
+
+  <section id="team">
+    <h2>The Lumineers — Team</h2>
+    <p class="sub">Seven students, shared ownership, majority vote on officer positions.</p>
+    <ul class="team">
+      <li>
+        <div class="name">Maalik W. Meneimneh</div>
+        <div class="role">Strategic Leader</div>
+        <div class="domains">Documentation &middot; 3-D CAD &middot; Baremetal programming &middot; Soldering &middot; Plastics &amp; metal fabrication</div>
+      </li>
+      <li>
+        <div class="name">Jasmine Proctor</div>
+        <div class="role">Scrum Master</div>
+        <div class="domains">Circuit design &middot; SBC programming &middot; Soldering</div>
+      </li>
+      <li>
+        <div class="name">Sanket Koirala</div>
+        <div class="role">Treasurer</div>
+        <div class="domains">GUI design &middot; SBC programming</div>
+      </li>
+      <li>
+        <div class="name">Thanh Doan</div>
+        <div class="role">Team Member</div>
+        <div class="domains">GUI design &middot; SBC programming</div>
+      </li>
+      <li>
+        <div class="name">Shaun Jacob</div>
+        <div class="role">Team Member</div>
+        <div class="domains">Driver design &middot; GUI design</div>
+      </li>
+      <li>
+        <div class="name">Zoha Khan</div>
+        <div class="role">Team Member</div>
+        <div class="domains">GUI design &middot; Circuit design &middot; Soldering</div>
+      </li>
+      <li>
+        <div class="name">Ethan M. Pinto</div>
+        <div class="role">Team Member</div>
+        <div class="domains">Baremetal programming &middot; Circuit design &middot; Soldering</div>
+      </li>
+    </ul>
+  </section>
+
+  <section id="deliverables">
+    <h2>Closeout Deliverables</h2>
+    <p class="sub">What ships alongside the working prototype in April 2026.</p>
+    <div class="grid cols-3">
+      <div class="card"><h3>System prototype</h3><p>A working LiteBoard driving real DMX512 fixtures as the Prototype Acceptance Test.</p></div>
+      <div class="card"><h3>Project poster</h3><p>Fabrication and testing photos, documentation samples, and narrative — shown on CoE Innovation Day.</p></div>
+      <div class="card"><h3>Demo video</h3><p>15–30 minutes covering real theatrical devices and showfile-software operation.</p></div>
+      <div class="card"><h3>Web page</h3><p>This site — specifications, photos, manuals, and video links.</p></div>
+      <div class="card"><h3>Source &amp; CAD</h3><p>Firmware, GUI app, hardware schematics, and 3-D CAD for case and controls.</p></div>
+      <div class="card"><h3>User manual</h3><p>Setup, operation, troubleshooting, and maintenance — plus installation scripts for end users.</p></div>
+    </div>
+  </section>
+
+  <section id="links">
+    <h2>Repository &amp; Source</h2>
+    <p class="sub">Work-in-progress code and schematics live on GitHub.</p>
+    <ul class="links">
+      <li><a href="https://github.com/sanketkoirala/sd-liteboard">GitHub repo</a></li>
+      <li><a href="https://github.com/sanketkoirala/sd-liteboard/tree/main/Schematics">Schematics (KiCad)</a></li>
+      <li><a href="https://github.com/sanketkoirala/sd-liteboard/tree/main/liteboard">Firmware</a></li>
+      <li><a href="https://github.com/sanketkoirala/sd-liteboard/tree/main/GUIApp">GUI App</a></li>
+      <li><a href="https://github.com/sanketkoirala/sd-liteboard/tree/main/Diagrams">Diagrams</a></li>
+      <li><a href="https://github.com/sanketkoirala/sd-liteboard/commits/main">Recent commits</a></li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  <div class="big"><span class="lite">Lite</span><span class="board">Board</span></div>
+  <div>The Lumineers &middot; CSE 4316 Senior Design &middot; Fall 2025 – Spring 2026</div>
+  <div>Department of Computer Science &amp; Engineering &middot; The University of Texas at Arlington</div>
+</footer>
+
+</body>
+</html>
